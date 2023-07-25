@@ -7,27 +7,20 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class TokenVerification
-{
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
-    public function handle(Request $request, Closure $next): Response
-    {
-        $token = $request->cookie('token');
-        $result = JWTToken::VerifyToken($token);
+class TokenVerification {
 
-        if($result=="unauthorized") {
-            return response()->json([
-                'status' => 'failed',
-                'message' => 'unauthorized'
-            ],401);
-        }
-        else {
-            $request->headers->set('email',$result);
-            return $next($request);
-        }
-    }
+	public function handle(Request $request, Closure $next): Response {
+        
+		$token  = $request->cookie('token');
+		$result = JWTToken::VerifyToken($token);
+
+		if ('unauthorized' == $result) {
+			return redirect('/userLogin');
+		}
+
+		$request->headers->set('email', $result->userEmail);
+		$request->headers->set('id', $result->userID);
+
+		return $next($request);
+	}
 }
